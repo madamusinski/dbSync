@@ -1,4 +1,4 @@
-package pl.madamusinski.dbsync.repository;
+package pl.madamusinski.dbsync.repository.syncOne;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

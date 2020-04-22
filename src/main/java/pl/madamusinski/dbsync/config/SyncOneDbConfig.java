@@ -17,24 +17,29 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 
 @Configuration
-@EnableTransactionManagement
-@EnableJpaRepositories(entityManagerFactoryRef = "syncOneEntityManager", transactionManagerRef = "sync1TransactionManager", basePackages = "pl.madamusinski.dbsync.repository")
-public class JpaConfig {
+//@EnableTransactionManagement
+@EnableJpaRepositories(basePackages = "pl.madamusinski.dbsync.repository.syncOne",
+        entityManagerFactoryRef = "syncOneEntityManager",
+        transactionManagerRef = "syncOneTransactionManager")
+public class SyncOneDbConfig {
+
     @Autowired
     private Environment env;
 
     @Bean
+    @Primary
     public DataSource syncOneDataSource(){
         DriverManagerDataSource ds
                 = new DriverManagerDataSource();
         ds.setDriverClassName(env.getProperty("spring.datasource.driver-class-name"));
-        ds.setUrl(env.getProperty("spring.datasource2.url"));
+        ds.setUrl(env.getProperty("spring.datasource.url"));
         ds.setUsername(env.getProperty("spring.datasource.username"));
         ds.setPassword(env.getProperty("spring.datasource.password"));
         return ds;
     }
 
     @Bean
+    @Primary
     public LocalContainerEntityManagerFactoryBean syncOneEntityManager(){
         LocalContainerEntityManagerFactoryBean em
                 = new LocalContainerEntityManagerFactoryBean();
@@ -47,15 +52,16 @@ public class JpaConfig {
         em.setJpaVendorAdapter(vendorAdapter);
         HashMap<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto",
-            env.getProperty("spring.jpa.hibernate.ddl-auto"));
+                env.getProperty("spring.jpa.hibernate.ddl-auto"));
         properties.put("hibernate.dialect",
-                env.getProperty("spring.datasource.driver-class-name"));
+                env.getProperty("spring.jpa.properties.hibernate.dialect"));
 
         return em;
     }
 
     @Bean
-    public PlatformTransactionManager sync1TransactionManager(){
+    @Primary
+    public PlatformTransactionManager syncOneTransactionManager(){
         JpaTransactionManager tx
                 = new JpaTransactionManager();
         tx.setEntityManagerFactory(
@@ -63,4 +69,5 @@ public class JpaConfig {
         );
         return tx;
     }
+
 }
