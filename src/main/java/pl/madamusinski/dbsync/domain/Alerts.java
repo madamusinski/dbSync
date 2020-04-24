@@ -17,7 +17,8 @@ import java.util.Objects;
 public class Alerts {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "message", length = -1, nullable = false)
     private String message;

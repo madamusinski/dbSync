@@ -1,8 +1,6 @@
 package pl.madamusinski.dbsync.web.rest;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.madamusinski.dbsync.domain.Alerts;
 import pl.madamusinski.dbsync.repository.syncTwo.AlertsRepositoryTwo;
 import pl.madamusinski.dbsync.service.AlertsService;
@@ -33,5 +31,15 @@ public class AlertsResource {
     @GetMapping("alertstwo")
     public List<Alerts> getAlertsTwo(){
         return alertsService.findAlertsTwo();
+    }
+
+    @PostMapping("/alerts")
+    public Alerts addAlert(@RequestBody Alerts alert){
+        return alertsService.save(alert);
+    }
+
+    @PutMapping("/alerts")
+    public Alerts updateAlert(@RequestBody Alerts alert){
+        return alertsService.save(alert);
     }
 }
