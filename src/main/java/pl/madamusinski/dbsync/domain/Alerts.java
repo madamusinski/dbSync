@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -17,6 +19,7 @@ import java.util.Objects;
 public class Alerts {
 
     @Id
+    @NotNull
     @Column(name = "id")
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,6 +27,10 @@ public class Alerts {
     private String message;
     @Column(name = "code", nullable = false)
     private Integer code;
+//    @Generated(GenerationTime.ALWAYS)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "time_stamp")
+    private Date timeStamp;
 
     @Override
     public boolean equals(Object o){
@@ -40,8 +47,9 @@ public class Alerts {
 
     @Override
     public String toString(){
-        return "Alerts{id: " + getId()
+        return "AlertsSyncOne{id: " + getId()
                 + ", message: '" + getMessage() + "'"
-                + ", code: " + getCode() +"}";
+                + ", code: " + getCode()
+                + ", timestamp: " + getTimeStamp() + "}";
     }
 }

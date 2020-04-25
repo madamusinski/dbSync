@@ -17,7 +17,7 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 
 @Configuration
-//@EnableTransactionManagement
+@EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "pl.madamusinski.dbsync.repository.syncOne",
         entityManagerFactoryRef = "syncOneEntityManager",
         transactionManagerRef = "syncOneTransactionManager")

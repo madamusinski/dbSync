@@ -2,9 +2,7 @@ package pl.madamusinski.dbsync.web.rest;
 
 import org.springframework.web.bind.annotation.*;
 import pl.madamusinski.dbsync.domain.Alerts;
-import pl.madamusinski.dbsync.repository.syncTwo.AlertsRepositoryTwo;
 import pl.madamusinski.dbsync.service.AlertsService;
-import pl.madamusinski.dbsync.service.AlertsServiceTwo;
 
 import java.util.List;
 
@@ -30,7 +28,8 @@ public class AlertsResource {
 
     @GetMapping("alertstwo")
     public List<Alerts> getAlertsTwo(){
-        return alertsService.findAlertsTwo();
+//        return alertsService.findAlertsTwo();
+        return alertsService.findAlertsTwoTwo();
     }
 
     @PostMapping("/alerts")
@@ -41,5 +40,21 @@ public class AlertsResource {
     @PutMapping("/alerts")
     public Alerts updateAlert(@RequestBody Alerts alert){
         return alertsService.save(alert);
+    }
+
+    @PostMapping("/alertstwo")
+    public Alerts addAlertTwo(@RequestBody Alerts alert) throws Exception {
+        return alertsService.savetwo(alert);
+    }
+
+    @GetMapping("/copy/{id}")
+    public List<Alerts> copy(@PathVariable(name = "id") Integer id){
+//        return alertsService.complexCopy(id);
+        return null;
+    }
+
+    @GetMapping("/copytwo/{id}")
+    public List<Alerts> copyTwo(@PathVariable(name = "id") Integer id){
+       return alertsService.complexCopy(id);
     }
 }

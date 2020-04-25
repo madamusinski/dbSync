@@ -10,8 +10,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import pl.madamusinski.dbsync.config.SyncOneDbConfig;
 import pl.madamusinski.dbsync.config.SyncTwoDbConfig;
+import pl.madamusinski.dbsync.domain.Alerts;
+import pl.madamusinski.dbsync.service.AlertsService;
 
 import javax.persistence.EntityManager;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
 
 @Service
 public class Scheduler {
@@ -19,15 +27,30 @@ public class Scheduler {
     private static final Logger log = LoggerFactory.getLogger(Scheduler.class);
     @Autowired
     private SyncOneDbConfig syncOneEntityManager;
-
+    @Autowired
+    AlertsService alertsService;
     @Autowired
     private SyncTwoDbConfig syncTwoEntityManager;
     @Timed
-//    @Scheduled(fixedRate = 500)
+    @Scheduled(fixedRate = 5000, initialDelay = 5000)
     public void job(){
-//        EntityManager em = syncOneEntityManager.syncOneDataSource().getConnection();
-        int i = 2;
-        System.out.println(i*i);
-        log.info("job has been done");
+       Date maxTime = (Date)alertsService.getTimeOfLastSync();
+        List<Alerts> alertsToSync = new ArrayList<>();
+
+        log.info("maxTime is {0}", maxTime);
+        if(Objects.nonNull(maxTime)){
+            alertsToSync = alertsService.getAlertsNotSynced(maxTime);
+            alertsService.syncTables(alertsToSync);
+        }else{
+            log.info("Max time does not exist on target table, copying entire table");
+            alertsToSync = alertsService.getAllAlerts();
+            if(Objects.nonNull(alertsToSync)){
+                alertsService.fillInTargetTable(alertsToSync);
+            }else{
+                log.error("Source Table is empty", new Exception("Empty source table"));
+            }
+        }
+        log.info("Synchronization on dbsync2 completed");
     }
+
 }
