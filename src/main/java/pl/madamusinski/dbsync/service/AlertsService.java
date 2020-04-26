@@ -1,5 +1,7 @@
 package pl.madamusinski.dbsync.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -20,14 +22,14 @@ import java.util.Objects;
 public class AlertsService {
 
 
+    private final Logger logger = LoggerFactory.getLogger(AlertsService.class);
     private final AlertsRepository alertsRepository;
     private final AlertsRepositoryTwo alertsRepositoryTwo;
     @Autowired
     SyncOneDbConfig dbConfig;
     @Autowired
     SyncTwoDbConfig dbConfigTwo;
-    @Autowired
-    PlatformTransactionManager syncTwoTransactionManager;
+
 
 
 
@@ -83,6 +85,7 @@ public class AlertsService {
         EntityManager emTarget = dbConfigTwo.syncTwoEntityManager().getNativeEntityManagerFactory().createEntityManager();
         Query q = emTarget.createQuery("select max(a.timeStamp) from Alerts a");
         maxTime = q.getResultList();
+        emTarget.close();
         return maxTime.get(0);
     }
 
@@ -92,6 +95,7 @@ public class AlertsService {
         Query q = emSource.createQuery("select a from Alerts a where a.timeStamp > :timeStamp")
                 .setParameter("timeStamp", fromTimestamp);
         alertsList = q.getResultList();
+        emSource.close();
         return alertsList;
     }
 
@@ -100,6 +104,7 @@ public class AlertsService {
         List<Alerts> alertsToCopy = new ArrayList<>();
         Query q = emSource.createQuery("select a from Alerts a");
         alertsToCopy = q.getResultList();
+        emSource.close();
         return alertsToCopy;
     }
 
@@ -115,6 +120,7 @@ public class AlertsService {
             emTarget.getTransaction().rollback();
             throw new RuntimeException("Copying entire table didnt succeed", e);
         }
+        emTarget.close();
     }
 
     public void syncTables(List<Alerts> alerts){
@@ -129,6 +135,7 @@ public class AlertsService {
             emTarget.getTransaction().rollback();
             throw new RuntimeException("Rollback", e);
         }
+        emTarget.close();
     }
 
     public List<Alerts> complexCopy(Integer id){
@@ -157,6 +164,24 @@ public class AlertsService {
         emTwo.getTransaction().commit();
         return returnAlertsList;
 
+    }
+
+    public void deleteTest(Integer id){
+        EntityManager em = dbConfig.syncOneEntityManager().getNativeEntityManagerFactory().createEntityManager();
+        Alerts alert = em.find(Alerts.class, id);
+        if(Objects.nonNull(alert)){
+            try{
+                em.getTransaction().begin();
+                em.remove(alert);
+                em.getTransaction().commit();
+            }catch(Exception e){
+                em.getTransaction().rollback();
+                logger.error("Cannot delete alert with id {0}, {1}", id, e );
+                throw new RuntimeException(e);
+            }
+        }else{
+            logger.error("Cannot delete non existing entity");
+        }
     }
 
 //    public Alerts insertAlertOne(Alerts a){

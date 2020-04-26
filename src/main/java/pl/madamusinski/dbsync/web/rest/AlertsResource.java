@@ -6,6 +6,10 @@ import pl.madamusinski.dbsync.service.AlertsService;
 
 import java.util.List;
 
+/**
+ * Rest controller only used to get all entities from db1 and db1 of Alerts tables
+ * Also used to post put and delete by use of POSTMAN or other tool
+ */
 @RestController
 @RequestMapping(value = "/api")
 public class AlertsResource {
@@ -56,5 +60,10 @@ public class AlertsResource {
     @GetMapping("/copytwo/{id}")
     public List<Alerts> copyTwo(@PathVariable(name = "id") Integer id){
        return alertsService.complexCopy(id);
+    }
+
+    @DeleteMapping("/alerts/{id}")
+    public void deleteAlert(@PathVariable(name="id")Integer id){
+        alertsService.deleteTest(id);
     }
 }

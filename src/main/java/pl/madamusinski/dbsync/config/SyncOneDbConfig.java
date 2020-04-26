@@ -16,6 +16,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 import java.util.HashMap;
 
+/**
+ * @author Mateusz Adamusiński
+ * Config of entitymanager, datasource for db1
+ */
+
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "pl.madamusinski.dbsync.repository.syncOne",
@@ -69,5 +74,4 @@ public class SyncOneDbConfig {
         );
         return tx;
     }
-
 }
