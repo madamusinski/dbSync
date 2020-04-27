@@ -51,17 +51,6 @@ public class AlertsResource {
         return alertsService.savetwo(alert);
     }
 
-    @GetMapping("/copy/{id}")
-    public List<Alerts> copy(@PathVariable(name = "id") Integer id){
-//        return alertsService.complexCopy(id);
-        return null;
-    }
-
-    @GetMapping("/copytwo/{id}")
-    public List<Alerts> copyTwo(@PathVariable(name = "id") Integer id){
-       return alertsService.complexCopy(id);
-    }
-
     @DeleteMapping("/alerts/{id}")
     public void deleteAlert(@PathVariable(name="id")Integer id){
         alertsService.deleteTest(id);

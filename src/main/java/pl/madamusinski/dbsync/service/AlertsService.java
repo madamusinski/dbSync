@@ -116,6 +116,7 @@ public class AlertsService {
                 emTarget.merge(a);
             }
             emTarget.getTransaction().commit();
+            logger.info("Synchronization completed entire source table synced to target table");
         }catch(Exception e){
             emTarget.getTransaction().rollback();
             throw new RuntimeException("Copying entire table didnt succeed", e);
@@ -131,6 +132,7 @@ public class AlertsService {
                 emTarget.merge(a);
             }
             emTarget.getTransaction().commit();
+            logger.info("objects synced: {}", alerts.toString());
         }catch (Exception e){
             emTarget.getTransaction().rollback();
             throw new RuntimeException("Rollback", e);
@@ -174,14 +176,20 @@ public class AlertsService {
                 em.getTransaction().begin();
                 em.remove(alert);
                 em.getTransaction().commit();
+                logger.info("Succesfuly deleted item of {} with id {}", getClass(), id);
             }catch(Exception e){
                 em.getTransaction().rollback();
                 logger.error("Cannot delete alert with id {0}, {1}", id, e );
                 throw new RuntimeException(e);
+            }finally{
+                if(em.isOpen())
+                    em.close();
             }
         }else{
             logger.error("Cannot delete non existing entity");
         }
+        if(em.isOpen())
+            em.close();
     }
 
 //    public Alerts insertAlertOne(Alerts a){

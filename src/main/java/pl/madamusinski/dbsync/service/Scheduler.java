@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import pl.madamusinski.dbsync.config.SyncOneDbConfig;
 import pl.madamusinski.dbsync.config.SyncTwoDbConfig;
 import pl.madamusinski.dbsync.domain.Alerts;
+import pl.madamusinski.dbsync.domain.Deletions;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,33 +25,44 @@ import java.util.Objects;
 @Service
 public class Scheduler {
 
-    private static final Logger log = LoggerFactory.getLogger(Scheduler.class);
+    private final Logger log = LoggerFactory.getLogger(Scheduler.class);
     @Autowired
     AlertsService alertsService;
+    @Autowired
+    AlertsSyncService alertsSyncService;
     /**
-     * Main method that runs every fixed rate to sync database
+     * Main method that runs at fixed rate tasks to sync database
      * whatever is put inside will be executed every given amount of time
      */
     @Timed
-    @Scheduled(fixedRate = 5000, initialDelay = 5000)
-    public void synchronizeDatabase(){
-       Date maxTime = (Date)alertsService.getTimeOfLastSync();
-        List<Alerts> alertsToSync = new ArrayList<>();
+    @Scheduled(fixedRate = 10000, initialDelay = 5000)
+    public void synchronizeTargetDatabase(){
+        List<Alerts> alertsToSync;
+        List<Deletions> alertsToDelete = new ArrayList<>();
 
-        log.info("maxTime is {0}", maxTime);
+        Date maxTime = alertsSyncService.lastSyncTime();
+
         if(Objects.nonNull(maxTime)){
-            alertsToSync = alertsService.getAlertsNotSynced(maxTime);
-            alertsService.syncTables(alertsToSync);
+            log.info("Last sync time is {}",
+                    (Objects.nonNull(maxTime)) ? maxTime : "unknown");
+            alertsToSync = alertsSyncService.findOutOfSyncObjects(maxTime);
+            alertsToDelete = alertsSyncService.lookUpDeletedEntries(maxTime);
         }else{
-            log.info("Max time does not exist on target table, copying entire table");
+            log.info("There is no max time to compare against, probably there is no data in dbsync2" +
+                    ", syncing entire tables right now!");
             alertsToSync = alertsService.getAllAlerts();
-            if(Objects.nonNull(alertsToSync)){
-                alertsService.fillInTargetTable(alertsToSync);
-            }else{
-                log.error("Source Table is empty", new Exception("Empty source table"));
-            }
         }
-        log.info("Synchronization on dbsync2 completed");
+
+        if(alertsToSync.size()!=0 || alertsToDelete.size()!=0){
+            if(alertsToDelete.size()!=0)
+                alertsSyncService.synchronizeDeletions(alertsToDelete);
+            if(alertsToSync.size()!=0)
+                alertsSyncService.synchronize(alertsToSync);
+            log.info("Synchronization on dbsync2 completed");
+        }else{
+            log.info("tables are synchronized");
+        }
+
     }
 
 }
