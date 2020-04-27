@@ -38,6 +38,7 @@ public class AlertsService {
         this.alertsRepositoryTwo = alertsRepositoryTwo;
     }
 
+
     public List<Alerts> findAlerts(){
         return alertsRepository.findAll();
     }
@@ -53,13 +54,10 @@ public class AlertsService {
     public List<Alerts> findAlertsTwoTwo(){
         EntityManagerFactory emftwo = dbConfigTwo.syncTwoEntityManager().getNativeEntityManagerFactory();
         EntityManager em = emftwo.createEntityManager();
-//        List<Alerts> alertsList = (List<Alerts>)em.createNativeQuery("select * from alerts");
         Query query = em.createQuery("select a from Alerts a");
         List<Alerts> alertsList = query.getResultList();
         alertsList.stream().forEach(System.out::println);
         return alertsList;
-
-//        return em.
     }
     public Alerts savetwo(Alerts alert) throws Exception {
         EntityManagerFactory emf = dbConfigTwo.syncTwoEntityManager().getNativeEntityManagerFactory();
@@ -80,25 +78,6 @@ public class AlertsService {
         return persistedAlert;
     }
 
-    public Object getTimeOfLastSync(){
-        List maxTime = new ArrayList();
-        EntityManager emTarget = dbConfigTwo.syncTwoEntityManager().getNativeEntityManagerFactory().createEntityManager();
-        Query q = emTarget.createQuery("select max(a.timeStamp) from Alerts a");
-        maxTime = q.getResultList();
-        emTarget.close();
-        return maxTime.get(0);
-    }
-
-    public List<Alerts> getAlertsNotSynced(Date fromTimestamp){
-        EntityManager emSource = dbConfig.syncOneEntityManager().getNativeEntityManagerFactory().createEntityManager();
-        List<Alerts> alertsList = new ArrayList<>();
-        Query q = emSource.createQuery("select a from Alerts a where a.timeStamp > :timeStamp")
-                .setParameter("timeStamp", fromTimestamp);
-        alertsList = q.getResultList();
-        emSource.close();
-        return alertsList;
-    }
-
     public List<Alerts> getAllAlerts(){
         EntityManager emSource = dbConfig.syncOneEntityManager().getNativeEntityManagerFactory().createEntityManager();
         List<Alerts> alertsToCopy = new ArrayList<>();
@@ -106,66 +85,6 @@ public class AlertsService {
         alertsToCopy = q.getResultList();
         emSource.close();
         return alertsToCopy;
-    }
-
-    public void fillInTargetTable(List<Alerts> alerts){
-        EntityManager emTarget = dbConfigTwo.syncTwoEntityManager().getNativeEntityManagerFactory().createEntityManager();
-        try{
-            emTarget.getTransaction().begin();
-            for(Alerts a : alerts){
-                emTarget.merge(a);
-            }
-            emTarget.getTransaction().commit();
-            logger.info("Synchronization completed entire source table synced to target table");
-        }catch(Exception e){
-            emTarget.getTransaction().rollback();
-            throw new RuntimeException("Copying entire table didnt succeed", e);
-        }
-        emTarget.close();
-    }
-
-    public void syncTables(List<Alerts> alerts){
-        EntityManager emTarget = dbConfigTwo.syncTwoEntityManager().getNativeEntityManagerFactory().createEntityManager();
-        try{
-            emTarget.getTransaction().begin();
-            for(Alerts a : alerts){
-                emTarget.merge(a);
-            }
-            emTarget.getTransaction().commit();
-            logger.info("objects synced: {}", alerts.toString());
-        }catch (Exception e){
-            emTarget.getTransaction().rollback();
-            throw new RuntimeException("Rollback", e);
-        }
-        emTarget.close();
-    }
-
-    public List<Alerts> complexCopy(Integer id){
-        List<Alerts> returnAlertsList = new ArrayList<>();
-        EntityManagerFactory emfTwo = dbConfigTwo.syncTwoEntityManager().getNativeEntityManagerFactory();
-        EntityManagerFactory emf = dbConfig.syncOneEntityManager().getNativeEntityManagerFactory();
-        EntityManager emTwo = emfTwo.createEntityManager();
-        EntityManager em = emf.createEntityManager();
-        Query q = em.createQuery("select a from Alerts a where a.id > :id ")
-                .setParameter("id", id);
-
-        List<Alerts> alertsList = q.getResultList();
-        alertsList.stream().forEach(System.out::println);
-        emTwo.getTransaction().begin();
-        for(Alerts a : alertsList){
-            try{
-                a.setCode(215);
-                a.setTimeStamp(new Date());
-               Alerts copyA = emTwo.merge(a);
-               returnAlertsList.add(copyA);
-            }catch(Exception e){
-                emTwo.getTransaction().rollback();
-                e.printStackTrace();
-            }
-        }
-        emTwo.getTransaction().commit();
-        return returnAlertsList;
-
     }
 
     public void deleteTest(Integer id){

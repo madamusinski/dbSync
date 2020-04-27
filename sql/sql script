@@ -1,0 +1,75 @@
+-- Run this script to setup databases
+
+-- Adding source database
+CREATE DATABASE sync1
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'Polish_Poland.1250'
+       LC_CTYPE = 'Polish_Poland.1250'
+       CONNECTION LIMIT = -1;
+
+
+create table alerts(
+	id integer primary key unique not null,
+	message text not null,
+	code integer not null,
+	time_stamp timestamp without time zone default current_timestamp
+)
+
+create table deletions(
+	id serial primary key not null,
+	id_deleted integer not null,
+	time_stamp timestamp without time zone not null default current_timestamp
+)
+
+CREATE INDEX alerts_time_stamp_index
+ON  alerts(time_stamp);
+
+CREATE INDEX deletions_time_stamp_index
+ON  deletions(time_stamp);
+
+CREATE OR REPLACE FUNCTION trigger_copy_id_on_delete()
+RETURNS trigger 
+SET SCHEMA 'public'
+LANGUAGE plpgsql
+AS
+$BODY$
+BEGIN
+	INSERT INTO deletions(id_deleted, time_stamp)
+	VALUES(OLD.id, now());
+	return old;
+	
+END;
+$BODY$
+
+CREATE TRIGGER copy_id_on_delete
+AFTER DELETE
+ON alerts
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_copy_id_on_delete();
+
+
+-- Adding second target database
+-- DROP DATABASE sync2;
+
+CREATE DATABASE sync2
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'Polish_Poland.1250'
+       LC_CTYPE = 'Polish_Poland.1250'
+       CONNECTION LIMIT = -1;
+
+create table alerts(
+	id integer primary key unique not null,
+	message text not null,
+	code integer not null,
+	time_stamp timestamp without time zone default current_timestamp
+)
+
+
+-- aby dodawać dla testów używamy restcontrollera
+-- np postmana uzywajac localhost:8081/api/alerts i dodajac raw w body jako json i ustawiajac albo POST albo PUT
+-- usuwamy tak samo localhost:8081/api/alerts/{id} ustawiamy DELETE jako metode http i podajemy w parametrze id
+{"id":5,"message":"te2222st2222","code":6}

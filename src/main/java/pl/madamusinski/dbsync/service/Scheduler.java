@@ -35,7 +35,7 @@ public class Scheduler {
      * whatever is put inside will be executed every given amount of time
      */
     @Timed
-    @Scheduled(fixedRate = 10000, initialDelay = 5000)
+    @Scheduled(fixedRate = 1500, initialDelay = 2000)
     public void synchronizeTargetDatabase(){
         List<Alerts> alertsToSync;
         List<Deletions> alertsToDelete = new ArrayList<>();
@@ -60,7 +60,7 @@ public class Scheduler {
                 alertsSyncService.synchronize(alertsToSync);
             log.info("Synchronization on dbsync2 completed");
         }else{
-            log.info("tables are synchronized");
+            log.info("Tables are synchronized");
         }
 
     }

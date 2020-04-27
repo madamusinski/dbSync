@@ -36,7 +36,6 @@ public class AlertsSyncService implements SyncService<Alerts> {
     SyncOneDbConfig dbConfig;
     @Autowired
     SyncTwoDbConfig dbConfigTwo;
-
     @Override
     public Date lastSyncTime() {
         List<Date> maxTime;
